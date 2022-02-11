@@ -20,7 +20,7 @@ phases:
       - docker build --tag $REPOSITORY_URI:$TAG .
       - docker push $REPOSITORY_URI:$TAG
       # Creating k3d cluster
-      - k3d create
+      - k3d cluster create --network deltastream 
       # Waiting for cluster creation for 20 seconds
       - sleep 20
       # Configuring kubectl for k3d cluster
