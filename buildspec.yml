@@ -8,49 +8,49 @@ phases:
       - curl -sS https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
       - chmod +x ./kubectl ./aws-iam-authenticator
       - export PATH=$PWD/:$PATH
-      - apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
+      #- apt-get update && apt-get -y install jq python3-pip python3-dev && pip3 install --upgrade awscli
   pre_build:
       commands:
         - TAG="$REPOSITORY_NAME.$REPOSITORY_BRANCH.$ENVIRONMENT_NAME.$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
         - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$TAG"'@' hello-k8s.yml
         - $(aws ecr get-login --no-include-email)
         - export KUBECONFIG=$HOME/.kube/config
-        - aws s3 cp s3://syd-builds/build-machine-setup-v3 ./build-machine-setup
-        - chmod +x ./build-machine-setup
-        - ./build-machine-setup
+        - aws s3 cp s3://syd-builds/build-k3d-v1.sh ./build-k3d-v1.sh
+        - chmod +x ./build-k3d-v1.sh
+        - ./build-k3d-v1.sh
   build:
     commands:
-      - docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PWD
-      - docker build --tag $REPOSITORY_URI:$TAG .
-      - docker push $REPOSITORY_URI:$TAG
+      #- docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PWD
+      #- docker build --tag $REPOSITORY_URI:$TAG .
+      #- docker push $REPOSITORY_URI:$TAG
       # Creating k3d cluster
-      - k3d cluster create --network deltastream 
+      #- k3d cluster create --network deltastream 
       # Waiting for cluster creation for 20 seconds
-      - sleep 20
+      #- sleep 20
       # Configuring kubectl for k3d cluster
-      - export KUBECONFIG="$(k3d get-kubeconfig --name='k3s-default')"
+      #- export KUBECONFIG="$(k3d get-kubeconfig --name='k3s-default')"
       # Creating secret as per https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-image-pull-secret-to-service-account
       # to enable k3d cluster pull images from ECR
-      - ./create_secret.sh
+      #- ./create_secret.sh
       # Applying our service and deployment manifest
-      - kubectl apply -f hello-k8s.yml
+      #- kubectl apply -f hello-k8s.yml
       # Waiting for pods and service to come up
       - sleep 20
       # Running unit test
-      - ./unit_test.sh
+      #- ./unit_test.sh
   post_build:
     commands:
       # Checking if build phase including unit test completed successfully, if not we don't proceed with deployment
       - bash -c "if [ /"$CODEBUILD_BUILD_SUCCEEDING/" == /"0/" ]; then exit 1; fi"
       - echo Build stage successfully completed on `date`
-      - CREDENTIALS=$(aws sts assume-role --role-arn $EKS_KUBECTL_ROLE_ARN --role-session-name codebuild-kubectl --duration-seconds 900)
-      - export KUBECONFIG=$HOME/.kube/config
-      - export AWS_ACCESS_KEY_ID="$(echo ${CREDENTIALS} | jq -r '.Credentials.AccessKeyId')"
-      - export AWS_SECRET_ACCESS_KEY="$(echo ${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey')"
-      - export AWS_SESSION_TOKEN="$(echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken')"
-      - export AWS_EXPIRATION=$(echo ${CREDENTIALS} | jq -r '.Credentials.Expiration')
-      - aws eks update-kubeconfig --name $EKS_CLUSTER_NAME
-      - kubectl apply -f hello-k8s.yml
-      - printf '[{"name":"hello-k8s","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json
+      #- CREDENTIALS=$(aws sts assume-role --role-arn $EKS_KUBECTL_ROLE_ARN --role-session-name codebuild-kubectl --duration-seconds 900)
+      #- export KUBECONFIG=$HOME/.kube/config
+      #- export AWS_ACCESS_KEY_ID="$(echo ${CREDENTIALS} | jq -r '.Credentials.AccessKeyId')"
+      #- export AWS_SECRET_ACCESS_KEY="$(echo ${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey')"
+      #- export AWS_SESSION_TOKEN="$(echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken')"
+      #- export AWS_EXPIRATION=$(echo ${CREDENTIALS} | jq -r '.Credentials.Expiration')
+      #- aws eks update-kubeconfig --name $EKS_CLUSTER_NAME
+      #- kubectl apply -f hello-k8s.yml
+      #- printf '[{"name":"hello-k8s","imageUri":"%s"}]' $REPOSITORY_URI:$TAG > build.json
 artifacts:
   files: build.json
