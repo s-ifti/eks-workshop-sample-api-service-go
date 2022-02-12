@@ -15,8 +15,8 @@ phases:
         - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$TAG"'@' hello-k8s.yml
         - $(aws ecr get-login --no-include-email)
         - export KUBECONFIG=$HOME/.kube/config
-        - aws s3 cp s3://syd-builds/build-k3d-v1.sh ./build-k3d-v1.sh
-        - chmod +x ./build-k3d-v1.sh
+        - aws s3 cp s3://syd-builds/build-k3d-v2.sh ./build-k3d-v2.sh
+        - chmod +x ./build-k3d-v2.sh
         - ./build-k3d-v1.sh
   build:
     commands:
