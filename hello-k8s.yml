@@ -9,7 +9,7 @@ spec:
       targetPort: 8080
   selector:
     app: hello-k8s
-# test 24
+# test 25
 ---
 apiVersion: apps/v1
 kind: Deployment
