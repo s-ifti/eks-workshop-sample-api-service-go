@@ -16,9 +16,9 @@ phases:
         #- $(aws ecr get-login --no-include-email)
         - export KUBECONFIG=$HOME/.kube/config
         - docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PWD
-        - aws s3 cp s3://syd-builds/build-k3d-v3.sh ./build-k3d-v3.sh
-        - chmod +x ./build-k3d-v3.sh
-        - ./build-k3d-v3.sh
+        - aws s3 cp s3://syd-builds/build-k3d-v4.sh ./build-k3d-v4.sh
+        - chmod +x ./build-k3d-v4.sh
+        - ./build-k3d-v4.sh
   build:
     commands:
       #- docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PWD
